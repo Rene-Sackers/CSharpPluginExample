@@ -15,6 +15,7 @@ namespace CSharpPluginExample.Host
 	public class Program
 	{
 		private static readonly Type PluginType = typeof(Plugin);
+		private static readonly EventClass EventClass = new();
 
 		public static async Task Main(string[] args)
 		{
@@ -36,7 +37,6 @@ namespace CSharpPluginExample.Host
 		[MethodImpl(MethodImplOptions.NoInlining)] // Doesn't seem to have effect, but it's recommended
 		private static async Task ExecuteAndUnload(string pluginDllPath)
 		{
-			var eventClass = new EventClass();
 			var pluginAssemblyName = Path.GetFileNameWithoutExtension(pluginDllPath);
 
 			// Load the plugin
@@ -50,15 +50,15 @@ namespace CSharpPluginExample.Host
 			var pluginInstance = Activator.CreateInstance(pluginType) as Plugin; // This is our ExamplePlugin.cs
 
 			// Set shared class
-			pluginInstance.EventClass = eventClass;
+			pluginInstance.EventClass = EventClass;
 
 			// Interaction
 			pluginInstance.Start();
-			eventClass.Trigger();
+			EventClass.Trigger();
 			pluginInstance.Stop();
 
 			// Unload stuff. If any of these lines are missing, the plugin will not unload
-			pluginInstance.EventClass = null; // This is the only line that can be removed, but I'll leave it for good measure
+			//pluginInstance.EventClass = null; // This is the only line that can be removed, but I'll leave it for good measure
 			pluginInstance = null;
 			pluginAssembly = null;
 			pluginType = null;
