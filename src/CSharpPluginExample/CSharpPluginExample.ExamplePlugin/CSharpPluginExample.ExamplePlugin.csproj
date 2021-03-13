@@ -10,7 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\CSharpPluginExample.PluginBase\CSharpPluginExample.PluginBase.csproj">
+		<ProjectReference Include="..\CSharpPluginExample.Host\CSharpPluginExample.Host.csproj">
 			<Private>false</Private>
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</ProjectReference>

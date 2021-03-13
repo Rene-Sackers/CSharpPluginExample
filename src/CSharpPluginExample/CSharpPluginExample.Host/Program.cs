@@ -1,16 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CSharpPluginExample.Host.Helpers;
-using CSharpPluginExample.PluginBase;
 
 namespace CSharpPluginExample.Host
 {
 	public class Program
 	{
-		private static readonly Type PluginBaseType = typeof(Plugin);
+		private static readonly Type PluginType = typeof(Plugin);
 
 		public static async Task Main(string[] args)
 		{
@@ -21,37 +20,50 @@ namespace CSharpPluginExample.Host
 				return;
 			}
 
+			await ExecuteAndUnload(pluginDllPath);
+
+			await Task.Delay(-1);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private static async Task ExecuteAndUnload(string pluginDllPath)
+		{
+			var eventClass = new EventClass();
+
 			var pluginAssemblyName = Path.GetFileNameWithoutExtension(pluginDllPath);
 			var loadContext = new PluginLoadContext("Example plugin", pluginDllPath);
+			var loadContextWeakRef = new WeakReference(loadContext, true);
+
+			// Literally load, then unload the assembly. NOTHING in between
 			var pluginAssembly = loadContext.LoadFromAssemblyName(new(pluginAssemblyName));
-			var pluginAssemblyWeakRef = new WeakReference(pluginAssembly);
+			var pluginType = pluginAssembly.GetTypes().First(t => PluginType.IsAssignableFrom(t));
+			var pluginInstance = Activator.CreateInstance(pluginType) as Plugin;
 
-			//var pluginBaseType = pluginAssembly.GetTypes().FirstOrDefault(t => PluginBaseType.IsAssignableFrom(t));
-			//if (pluginBaseType == null)
-			//{
-			//	EndMessage("Plugin does not have a class implementing type " + PluginBaseType.FullName);
-			//	loadContext.Unload();
-			//	return;
-			//}
-
-			//var pluginBaseInstance = Activator.CreateInstance(pluginBaseType) as Plugin;
-			//Console.WriteLine($"Plugin \"{pluginBaseInstance.Name}\" loaded.");
-			//await pluginBaseInstance.Start();
-			//await pluginBaseInstance.Stop();
+			pluginInstance.EventClass = eventClass;
+			pluginInstance.Start();
+			eventClass.Trigger();
+			pluginInstance.Stop();
+			pluginInstance.EventClass = null;
+			pluginInstance = null;
+			pluginAssembly = null;
+			pluginType = null;
 
 			loadContext.Unload();
+			loadContext = null;
+
 			Console.WriteLine("Unloading plugin");
-			
-			for (var i = 0; pluginAssemblyWeakRef.IsAlive && i < 10; i++)
+
+			// If I don't do this, pluginAssemblyWeakRef.IsAlive stays true
+			await Task.Delay(1);
+
+			for (var i = 0; loadContextWeakRef.IsAlive && i < 10; i++)
 			{
 				Console.WriteLine($"Garbage collection iteration: {i}");
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
 			}
 
-			Console.WriteLine($"GC done. Is alive: {pluginAssemblyWeakRef.IsAlive}");
-
-			await Task.Delay(-1);
+			Console.WriteLine($"GC done. Is alive: {loadContextWeakRef.IsAlive}");
 		}
 
 		private static void EndMessage(string message)
