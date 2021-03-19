@@ -18,6 +18,22 @@ namespace CSharpPluginExample.ExamplePlugin
 			EventClass.ExampleEvent += ExampleEvent;
 			DeserializeWithJsonNet();
 			//DeserializeWithMsJson();
+			//DeserializeWithProvidedType();
+			//DeserializeWithSelfMadeType();
+		}
+
+		private void DeserializeWithProvidedType()
+		{
+			// If we do this, the plugin will not unload
+			var result = DeserializeMeSomething.DeserializeMeThis<JsonDeserializeType>(SampleJson);
+			Console.WriteLine($"Deserialized with provided type: {result.Property}");
+		}
+
+		private void DeserializeWithSelfMadeType()
+		{
+			// If we do this, the plugin will not unload
+			var result = new DeserializeMeSomething().DeserializeMeThis<JsonDeserializeType>(SampleJson);
+			Console.WriteLine($"Deserialized with self made type: {result.Property}");
 		}
 
 		private void DeserializeWithJsonNet()

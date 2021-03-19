@@ -51,6 +51,7 @@ namespace CSharpPluginExample.Host
 
 			// Set shared class
 			pluginInstance.EventClass = EventClass;
+			pluginInstance.DeserializeMeSomething = new();
 
 			// Interaction
 			pluginInstance.Start();
@@ -58,7 +59,8 @@ namespace CSharpPluginExample.Host
 			pluginInstance.Stop();
 
 			// Unload stuff. If any of these lines are missing, the plugin will not unload
-			//pluginInstance.EventClass = null; // This is the only line that can be removed, but I'll leave it for good measure
+			// pluginInstance.EventClass = null; // These 2 don't have to be un-referenced
+			// pluginInstance.DeserializeMeSomething = null;
 			pluginInstance = null;
 			pluginAssembly = null;
 			pluginType = null;
