@@ -2,7 +2,7 @@
 
 namespace CSharpPluginExample.Host
 {
-	public class DeserializeMeSomething
+	public class DeserializeMeSomethingHost
 	{
 		public T DeserializeMeThis<T>(string json)
 		{

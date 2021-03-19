@@ -45,3 +45,11 @@ await Task.Delay(1);
 after unloading the context.
 
 Also make sure you unhook any events on unload.
+
+## Example
+
+### Successful unload
+![success](readme/success.png)
+
+### Failed unload
+![failure](readme/failure.png)
